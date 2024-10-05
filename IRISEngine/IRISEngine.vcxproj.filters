@@ -28,6 +28,9 @@
     <Filter Include="Source Files\shaders">
       <UniqueIdentifier>{6b1ee923-b570-44e9-8881-79a70e8be48b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\textures">
+      <UniqueIdentifier>{a9746127-136a-4d78-bc0c-9551e90f144c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -41,6 +44,9 @@
     <ClInclude Include="src\include\graphics\shader.h">
       <Filter>Header Files\graphics</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\graphics\stb_image.h">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\testShader.frag">
@@ -49,5 +55,10 @@
     <None Include="shaders\testShader.vert">
       <Filter>Source Files\shaders</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\textures\container.jpg">
+      <Filter>Resource Files\textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>
