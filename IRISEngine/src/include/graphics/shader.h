@@ -2,6 +2,7 @@
 #define _SHADER_
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 
 #include <string>
 #include <fstream>
@@ -88,6 +89,10 @@ public:
 		glDeleteShader(fragment);
 	}
 
+	unsigned int get_id() const {
+		return _ID;
+	}
+
 	void use() {
 		glUseProgram(_ID);
 	}
@@ -104,6 +109,41 @@ public:
 		glUniform1f(glGetUniformLocation(_ID, _Name.c_str()), _Val);
 	}
 
+	void set_vec2(const string& _Name, const glm::vec2& _Val) const {
+		glUniform2fv(glGetUniformLocation(_ID, _Name.c_str()), 1, &_Val[0]);
+	}
+
+	void set_vec2(const string& _Name, float _x, float _y) const {
+		glUniform2f(glGetUniformLocation(_ID, _Name.c_str()), _x, _y);
+	}
+
+	void set_vec3(const string& _Name, const glm::vec3& _Val) const {
+		glUniform3fv(glGetUniformLocation(_ID, _Name.c_str()), 1, &_Val[0]);
+	}
+
+	void set_vec3(const string& _Name, float _x, float _y, float _z) const {
+		glUniform3f(glGetUniformLocation(_ID, _Name.c_str()), _x, _y, _z);
+	}
+
+	void set_vec4(const string& _Name, const glm::vec4& _Val) const {
+		glUniform4fv(glGetUniformLocation(_ID, _Name.c_str()), 1, &_Val[0]);
+	}
+
+	void set_vec4(const string& _Name, float _x, float _y, float _z, float _w) const {
+		glUniform4f(glGetUniformLocation(_ID, _Name.c_str()), _x, _y, _z, _w);
+	}
+
+	void set_mat2(const string& _Name, const glm::mat2& _Val) const {
+		glUniformMatrix2fv(glGetUniformLocation(_ID, _Name.c_str()), 1, GL_FALSE, &_Val[0][0]);
+	}
+
+	void set_mat3(const string& _Name, const glm::mat3& _Val) const {
+		glUniformMatrix3fv(glGetUniformLocation(_ID, _Name.c_str()), 1, GL_FALSE, &_Val[0][0]);
+	}
+
+	void set_mat4(const string& _Name, const glm::mat4& _Val) const {
+		glUniformMatrix4fv(glGetUniformLocation(_ID, _Name.c_str()), 1, GL_FALSE, &_Val[0][0]);
+	}
 };
 
 #endif // !_SHADER_
