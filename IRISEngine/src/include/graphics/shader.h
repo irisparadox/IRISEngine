@@ -89,6 +89,10 @@ public:
 		glDeleteShader(fragment);
 	}
 
+	~Shader() {
+		glDeleteProgram(_ID);
+	}
+
 	unsigned int get_id() const {
 		return _ID;
 	}
