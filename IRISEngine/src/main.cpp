@@ -14,8 +14,8 @@
 #include <graphics/stb_image.h>
 #include <graphics/shader.h>
 
-const unsigned int SCR_WIDTH = 1024;
-const unsigned int SCR_HEIGHT = 576;
+int SCR_WIDTH = 1024;
+int SCR_HEIGHT = 576;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -24,9 +24,9 @@ bool cursorEnabled = false;
 bool firstMouse = true;
 float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
 float pitch = 0.0f;
-float lastX = 800.0f / 2.0;
-float lastY = 600.0 / 2.0;
-float fov = 45.0f;
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
+float fov = 75.0f;
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -95,7 +95,12 @@ void processInput(GLFWwindow* window) {
 	if (cursorEnabled)
 		return;
 
-	float cameraSpeed = 2.5 * deltaTime; // adjust accordingly
+	float cameraSpeed = 2.5f * deltaTime; // adjust accordingly
+
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		cameraSpeed *= 3.0f;
+	else
+		cameraSpeed = 2.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		cameraPos += cameraSpeed * cameraFront;
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -104,6 +109,10 @@ void processInput(GLFWwindow* window) {
 		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+		cameraPos += cameraSpeed * cameraUp;
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+		cameraPos -= cameraSpeed * cameraUp;
 }
 
 int main() {
@@ -139,6 +148,7 @@ int main() {
 	}
 
 	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_CULL_FACE);
 	
 	Shader rectShader("shaders/testShader.vert", "shaders/testShader.frag");
 
@@ -201,15 +211,15 @@ int main() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	unsigned int texture1, texture2;
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1);
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	int	width, height, nrChannels;
 	stbi_set_flip_vertically_on_load(true);
@@ -223,29 +233,9 @@ int main() {
 	}
 	stbi_image_free(data);
 
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	data = stbi_load("resources/textures/awesomeface.png", &width, &height, &nrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else {
-		std::cout << "Failed to load texture" << '\n';
-	}
-	stbi_image_free(data);
-
 	rectShader.use();
 
 	rectShader.set_int("_Texture1", 0);
-	rectShader.set_int("_Texture2", 1);
 
 	// uncomment this call to draw in wireframe polygons.
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -258,7 +248,9 @@ int main() {
 	ImGui_ImplOpenGL3_Init("#version 460");
 
 	while (!glfwWindowShouldClose(window)) {
-		float currentFrame = glfwGetTime();
+		glfwGetWindowSize(window, &SCR_WIDTH, &SCR_HEIGHT);
+
+		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -272,17 +264,15 @@ int main() {
 		ImGui::NewFrame();
 		
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
+		glBindTexture(GL_TEXTURE_2D, texture);
 
 		glm::mat4 model(1.0f);
 		glm::mat4 view(1.0f);
 		glm::mat4 projection(1.0f);
 
 		const float radius = 2.0f;
-		float camX = sin(glfwGetTime()) * radius;
-		float camZ = cos(glfwGetTime()) * radius;
+		float camX = sin(static_cast<float>(glfwGetTime())) * radius;
+		float camZ = cos(static_cast<float>(glfwGetTime())) * radius;
 
 		//model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, -1.0f, 1.0f));
 		view = glm::lookAt(
@@ -290,7 +280,7 @@ int main() {
 			cameraPos + cameraFront,
 			cameraUp
 		);
-		projection = glm::perspective(glm::radians(fov), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);
+		projection = glm::perspective(glm::radians(fov), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.01f, 100.0f);
 
 		rectShader.set_mat4("_model", model);
 		rectShader.set_mat4("_view", view);
@@ -299,7 +289,9 @@ int main() {
 		glBindVertexArray(vao_arr);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		ImGui::Begin("FPS");
+		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+		ImGui::SetNextWindowSize(ImVec2(70, 50), ImGuiCond_Always);
+		ImGui::Begin("FPS", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
 		ImGui::Text("%.1f", io.Framerate);
 		ImGui::End();
 
