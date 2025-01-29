@@ -149,6 +149,7 @@
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
     <ClCompile Include="src\glad\glad.c" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\world\time.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\backends\imgui_impl_glfw.h" />
@@ -158,8 +159,10 @@
     <ClInclude Include="ImGui\imstb_rectpack.h" />
     <ClInclude Include="ImGui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imstb_truetype.h" />
+    <ClInclude Include="src\include\controller\camera.h" />
     <ClInclude Include="src\include\graphics\shader.h" />
     <ClInclude Include="src\include\graphics\stb_image.h" />
+    <ClInclude Include="src\include\world\time.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\testShader.frag" />

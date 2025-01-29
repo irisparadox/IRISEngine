@@ -9,6 +9,8 @@
 
 #include <iostream>
 #include <algorithm>
+#include <world/time.h>
+#include <controller/camera.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <graphics/stb_image.h>
@@ -17,102 +19,55 @@
 int SCR_WIDTH = 1024;
 int SCR_HEIGHT = 576;
 
-float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 bool cursorEnabled = false;
 bool firstMouse = true;
-float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
-float pitch = 0.0f;
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-float fov = 75.0f;
+double lastX = SCR_WIDTH / 2.0;
+double lastY = SCR_HEIGHT / 2.0;
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+Camera cam(cameraPos, cameraUp, cameraFront);
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
-	if (cursorEnabled)
+	if (cursorEnabled) {
+		lastX = xposIn;
+		lastY = yposIn;
 		return;
+	}
 
-	float xpos = static_cast<float>(xposIn);
-	float ypos = static_cast<float>(yposIn);
-
-	if (firstMouse)
-	{
-		lastX = xpos;
-		lastY = ypos;
+	if (firstMouse) {
+		lastX = xposIn;
+		lastY = yposIn;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-	lastX = xpos;
-	lastY = ypos;
+	double xOffset = xposIn - lastX;
+	double yOffset = lastY - yposIn;
 
-	float sensitivity = 0.1f; // change this value to your liking
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
+	lastX = xposIn;
+	lastY = yposIn;
 
-	yaw += xoffset;
-	pitch += yoffset;
-
-	// make sure that when pitch is out of bounds, screen doesn't get flipped
-	pitch = std::clamp(pitch, -89.0f, 89.0f);
-
-	glm::vec3 front;
-	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	front.y = sin(glm::radians(pitch));
-	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(front);
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-	fov -= (float)yoffset;
-	if (fov < 1.0f)
-		fov = 1.0f;
-	if (fov > 45.0f)
-		fov = 45.0f;
+	cam.process_mouse(xOffset, yOffset);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		cursorEnabled = !cursorEnabled;
-		if (cursorEnabled)
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		else
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	}
 }
 
 void processInput(GLFWwindow* window) {
 	if (cursorEnabled)
 		return;
 
-	float cameraSpeed = 2.5f * deltaTime; // adjust accordingly
-
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		cameraSpeed *= 3.0f;
-	else
-		cameraSpeed = 2.5f * deltaTime;
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPos += cameraSpeed * cameraFront;
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * cameraFront;
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-		cameraPos += cameraSpeed * cameraUp;
-	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * cameraUp;
+	cam.process_keyboard(window);
 }
 
 int main() {
@@ -140,7 +95,6 @@ int main() {
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetKeyCallback(window, key_callback);
-	glfwSetScrollCallback(window, scroll_callback);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cout << "Failed to initialize GLAD" << '\n';
@@ -218,8 +172,8 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	int	width, height, nrChannels;
 	stbi_set_flip_vertically_on_load(true);
@@ -247,12 +201,17 @@ int main() {
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 460");
 
+	Time::init();
+
 	while (!glfwWindowShouldClose(window)) {
 		glfwGetWindowSize(window, &SCR_WIDTH, &SCR_HEIGHT);
 
-		float currentFrame = static_cast<float>(glfwGetTime());
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		Time::update();
+
+		if (cursorEnabled)
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		else
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 		processInput(window);
 
@@ -267,24 +226,10 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, texture);
 
 		glm::mat4 model(1.0f);
-		glm::mat4 view(1.0f);
-		glm::mat4 projection(1.0f);
-
-		const float radius = 2.0f;
-		float camX = sin(static_cast<float>(glfwGetTime())) * radius;
-		float camZ = cos(static_cast<float>(glfwGetTime())) * radius;
-
-		//model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, -1.0f, 1.0f));
-		view = glm::lookAt(
-			cameraPos,
-			cameraPos + cameraFront,
-			cameraUp
-		);
-		projection = glm::perspective(glm::radians(fov), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.01f, 100.0f);
 
 		rectShader.set_mat4("_model", model);
-		rectShader.set_mat4("_view", view);
-		rectShader.set_mat4("_projection", projection);
+		rectShader.set_mat4("_view", cam.get_view_matrix());
+		rectShader.set_mat4("_projection", cam.get_projection_matrix((float)SCR_WIDTH / (float) SCR_HEIGHT));
 
 		glBindVertexArray(vao_arr);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -301,6 +246,8 @@ int main() {
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	Time::end();
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();

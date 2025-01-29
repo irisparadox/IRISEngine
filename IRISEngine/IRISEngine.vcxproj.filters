@@ -37,6 +37,15 @@
     <Filter Include="Source Files\ImGui">
       <UniqueIdentifier>{e3b98e44-1d06-4c20-b886-cd8cce285286}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\world">
+      <UniqueIdentifier>{f448b78d-1f02-4502-b4ee-2d3345f4664e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\world">
+      <UniqueIdentifier>{0a7b570b-7631-479c-bbd2-304623a223b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\controller">
+      <UniqueIdentifier>{c93e856e-c384-4d95-abf9-075f6cdef9db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -62,6 +71,9 @@
     </ClCompile>
     <ClCompile Include="ImGui\imgui_widgets.cpp">
       <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\world\time.cpp">
+      <Filter>Source Files\src\world</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -91,6 +103,12 @@
     </ClInclude>
     <ClInclude Include="ImGui\imstb_truetype.h">
       <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\world\time.h">
+      <Filter>Header Files\world</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\controller\camera.h">
+      <Filter>Header Files\controller</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
