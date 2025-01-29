@@ -8,12 +8,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <world/time.h>
 
-#define FORWARD glm::vec3(1.0f, 0.0f, 0.0f);
-#define BACKWARDS glm::vec3(-1.0f, 0.0f, 0.0f);
-#define RIGHT glm::vec3(0.0f, 0.0f,  1.0f);
-#define LEFT glm::vec3(0.0f, 0.0f, -1.0f);
-#define UP glm::vec3(0.0f, 1.0f, 0.0f);
-#define DOWN glm::vec3(0.0f, -1.0f, 0.0f)
+#include <iostream>
 
 class Camera {
 	using vec3 = glm::vec3;
@@ -33,8 +28,28 @@ public:
 		return glm::perspective(glm::radians(_Myfov), _aspect_ratio, _Clipnear, _Clipfar);
 	}
 
+	void set_window(GLFWwindow* _window) {
+		window = _window;
+	}
+
 public:
-	void process_keyboard(GLFWwindow* window) {
+	void update_last_mouse_pos() {
+		double x, y;
+		glfwGetCursorPos(window, &x, &y);
+		_last_mouse_pos = glm::vec2(static_cast<float>(x), -static_cast<float>(y));
+	}
+
+	void update() {
+		double x, y;
+		glfwGetCursorPos(window, &x, &y);
+		_mouse_pos = glm::vec2(static_cast<float>(x), -static_cast<float>(y));
+		glm::vec2 delta = (_mouse_pos - _last_mouse_pos);
+		_last_mouse_pos = _mouse_pos;
+
+		process_mouse(delta.x, delta.y);
+	}
+
+	void process_keyboard() {
 		float velocity = _Myspeed * Time::delta_time;
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) _Mypos += glm::normalize(vec3(_Vecfront.x, 0.0f, _Vecfront.z)) * velocity;
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) _Mypos -= glm::normalize(vec3(_Vecfront.x, 0.0f, _Vecfront.z)) * velocity;
@@ -44,33 +59,33 @@ public:
 		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) _Mypos -= vec3(0.0f, 1.0f, 0.0f) * velocity;
 	}
 
-	void process_mouse(double xOffset, double yOffset) {
-		xOffset *= static_cast<double>(_Mysens);
-		yOffset *= static_cast<double>(_Mysens);
+private:
+	void _vec_update() {
+		_Vecfront = glm::normalize(_quat * glm::vec3(0.0f, 0.0f, -1.0f));
+		_Vecright = glm::normalize(glm::cross(_Vecfront, _Worldup));
+		_Vecup    = glm::normalize(glm::cross(_Vecright, _Vecfront));
+	}
+
+	void process_mouse(float xOffset, float yOffset) {
+		xOffset *= _Mysens;
+		yOffset *= _Mysens;
 
 		glm::quat yaw_quat = glm::angleAxis(glm::radians(-static_cast<float>(xOffset)), _Worldup);
 
 		vec3 forward = _quat * vec3(0.0f, 0.0f, -1.0f);
 		float current_pitch = glm::degrees(asin(forward.y));
 
-		float new_pitch = glm::clamp(current_pitch + static_cast<float>(yOffset), -85.0f, 85.0f);
+		float new_pitch = glm::clamp(current_pitch + static_cast<float>(yOffset), -84.0f, 84.0f);
 		float delta_pitch = new_pitch - current_pitch;
 
-		vec3 local_right	 = glm::normalize(glm::cross(forward, _Worldup));
+		vec3 local_right = glm::normalize(glm::cross(forward, _Worldup));
 		glm::quat pitch_quat = glm::angleAxis(glm::radians(delta_pitch), local_right);
 
 		glm::quat target_quat = glm::normalize(pitch_quat * yaw_quat * _quat);
-		
+
 		_quat = glm::slerp(_quat, target_quat, _Smoothness);
 
 		_vec_update();
-	}
-
-private:
-	void _vec_update() {
-		_Vecfront = glm::normalize(_quat * glm::vec3(0.0f, 0.0f, -1.0f));
-		_Vecright = glm::normalize(glm::cross(_Vecfront, _Worldup));
-		_Vecup    = glm::normalize(glm::cross(_Vecright, _Vecfront));
 	}
 
 private:
@@ -81,6 +96,10 @@ private:
 	vec3 _Worldup;
 
 	glm::quat _quat;
+	glm::vec2 _mouse_pos;
+	glm::vec2 _last_mouse_pos{ 0.0f, 0.0f };
+
+	GLFWwindow* window;
 
 	float _Myspeed, _Mysens, _Myfov;
 	float _Clipnear, _Clipfar;

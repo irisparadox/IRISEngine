@@ -19,12 +19,8 @@
 int SCR_WIDTH = 1024;
 int SCR_HEIGHT = 576;
 
-float lastFrame = 0.0f;
-
 bool cursorEnabled = false;
 bool firstMouse = true;
-double lastX = SCR_WIDTH / 2.0;
-double lastY = SCR_HEIGHT / 2.0;
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -36,28 +32,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
-	if (cursorEnabled) {
-		lastX = xposIn;
-		lastY = yposIn;
-		return;
-	}
-
-	if (firstMouse) {
-		lastX = xposIn;
-		lastY = yposIn;
-		firstMouse = false;
-	}
-
-	double xOffset = xposIn - lastX;
-	double yOffset = lastY - yposIn;
-
-	lastX = xposIn;
-	lastY = yposIn;
-
-	cam.process_mouse(xOffset, yOffset);
-}
-
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		cursorEnabled = !cursorEnabled;
@@ -67,7 +41,7 @@ void processInput(GLFWwindow* window) {
 	if (cursorEnabled)
 		return;
 
-	cam.process_keyboard(window);
+	cam.process_keyboard();
 }
 
 int main() {
@@ -83,6 +57,7 @@ int main() {
 
 
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "IRIS Engine", NULL, NULL);
+	cam.set_window(window);
 
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << '\n';
@@ -93,7 +68,6 @@ int main() {
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetKeyCallback(window, key_callback);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -207,7 +181,12 @@ int main() {
 		glfwGetWindowSize(window, &SCR_WIDTH, &SCR_HEIGHT);
 
 		Time::update();
-
+		if (firstMouse || cursorEnabled) {
+			cam.update_last_mouse_pos();
+			firstMouse = false;
+		}
+		else if (!cursorEnabled) cam.update();
+		
 		if (cursorEnabled)
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		else
