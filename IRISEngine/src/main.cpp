@@ -1,7 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -179,18 +178,6 @@ int main() {
 		glBindVertexArray(vao_arr);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		/*ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-		ImGui::SetNextWindowSize(ImVec2(70, 50), ImGuiCond_Always);
-		ImGui::Begin("FPS", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
-		ImGui::Text("%.1f", io.Framerate);
-		ImGui::End();
-
-		ImGui::SetNextWindowPos(ImVec2(70, 0), ImGuiCond_Always);
-		ImGui::SetNextWindowSize(ImVec2(60, 50), ImGuiCond_Always);
-		ImGui::Begin("Time", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
-		ImGui::Text("%.1f", Time::time);
-		ImGui::End();*/
-
 		static bool window_bool = true;
 		static bool init_window = true;
 		if (init_window) {
@@ -217,13 +204,6 @@ int main() {
 
 			if(c19) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-			/*ImGui::SetCursorPos(ImVec2(15, 70));
-			ImGui::Text("CPU Usage: %.2%%", );
-
-			ImGui::SetCursorPos(ImVec2(15, 90));
-			ImGui::Text("GPU Usage: %.2%%");*/
-
 		}
 		ImGui::End();
 

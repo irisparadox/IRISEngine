@@ -8,8 +8,6 @@
 #include <glm/gtx/quaternion.hpp>
 #include <world/time.h>
 
-#include <iostream>
-
 class Camera {
 	using vec3 = glm::vec3;
 
@@ -52,6 +50,7 @@ public:
 
 	void process_keyboard() {
 		float velocity = _Myspeed * Time::delta_time;
+		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) velocity *= 2;
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) _Mypos += glm::normalize(vec3(_Vecfront.x, 0.0f, _Vecfront.z)) * velocity;
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) _Mypos -= glm::normalize(vec3(_Vecfront.x, 0.0f, _Vecfront.z)) * velocity;
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) _Mypos -= glm::normalize(vec3(_Vecright.x, 0.0f, _Vecright.z)) * velocity;
