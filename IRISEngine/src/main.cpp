@@ -213,10 +213,52 @@ int main() {
 		glBindVertexArray(vao_arr);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+		/*ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 		ImGui::SetNextWindowSize(ImVec2(70, 50), ImGuiCond_Always);
 		ImGui::Begin("FPS", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
 		ImGui::Text("%.1f", io.Framerate);
+		ImGui::End();
+
+		ImGui::SetNextWindowPos(ImVec2(70, 0), ImGuiCond_Always);
+		ImGui::SetNextWindowSize(ImVec2(60, 50), ImGuiCond_Always);
+		ImGui::Begin("Time", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
+		ImGui::Text("%.1f", Time::time);
+		ImGui::End();*/
+
+		static bool window_bool = true;
+		static bool init_window = true;
+		if (init_window) {
+			ImGui::SetNextWindowSize(ImVec2(269, 163), ImGuiCond_Always);
+			ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+			init_window = false;
+		}
+
+		if (ImGui::Begin("Debug", &window_bool, ImGuiWindowFlags_None))
+		{
+
+			ImGui::SetCursorPos(ImVec2(15, 30));
+			ImGui::Text("FPS: %.1f", io.Framerate);
+
+			ImGui::SetCursorPos(ImVec2(15, 50));
+			ImGui::Text("Time: %.1f", Time::time);
+
+			ImGui::SetCursorPos(ImVec2(15, 70));
+			ImGui::Text("Delta Time: %.1f", Time::delta_time);
+
+			ImGui::SetCursorPos(ImVec2(15, 110));
+			static bool c19 = false;
+			ImGui::Checkbox("Wireframe View", &c19);
+
+			if(c19) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+			/*ImGui::SetCursorPos(ImVec2(15, 70));
+			ImGui::Text("CPU Usage: %.2%%", );
+
+			ImGui::SetCursorPos(ImVec2(15, 90));
+			ImGui::Text("GPU Usage: %.2%%");*/
+
+		}
 		ImGui::End();
 
 		ImGui::Render();
