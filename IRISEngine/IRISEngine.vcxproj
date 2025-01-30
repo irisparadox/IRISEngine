@@ -148,6 +148,7 @@
     <ClCompile Include="ImGui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
     <ClCompile Include="src\glad\glad.c" />
+    <ClCompile Include="src\graphics\window.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\world\time.cpp" />
   </ItemGroup>
@@ -162,6 +163,7 @@
     <ClInclude Include="src\include\controller\camera.h" />
     <ClInclude Include="src\include\graphics\shader.h" />
     <ClInclude Include="src\include\graphics\stb_image.h" />
+    <ClInclude Include="src\include\graphics\window.h" />
     <ClInclude Include="src\include\world\time.h" />
   </ItemGroup>
   <ItemGroup>

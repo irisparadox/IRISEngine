@@ -15,6 +15,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <graphics/stb_image.h>
 #include <graphics/shader.h>
+#include <graphics/window.h>
 
 int SCR_WIDTH = 1024;
 int SCR_HEIGHT = 576;
@@ -26,49 +27,17 @@ glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-Camera cam(cameraPos, cameraUp, cameraFront);
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-	glViewport(0, 0, width, height);
-}
-
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		cursorEnabled = !cursorEnabled;
 }
 
-void processInput(GLFWwindow* window) {
-	if (cursorEnabled)
-		return;
-
-	cam.process_keyboard();
-}
-
 int main() {
 
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif // __APPLE__
-
-
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "IRIS Engine", NULL, NULL);
-	cam.set_window(window);
-
-	if (window == NULL) {
-		std::cout << "Failed to create GLFW window" << '\n';
-		glfwTerminate();
-		return -1;
-	}
-	glfwMakeContextCurrent(window);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetKeyCallback(window, key_callback);
+	Window window(SCR_WIDTH, SCR_HEIGHT, "IRIS Engine");
+	glfwSetKeyCallback(window.get_GLFWwindow(), key_callback);
+	Camera cam(cameraPos, cameraUp, cameraFront);
+	cam.set_window(window.get_GLFWwindow());
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cout << "Failed to initialize GLAD" << '\n';
@@ -172,14 +141,13 @@ int main() {
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	ImGui::StyleColorsDark();
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplGlfw_InitForOpenGL(window.get_GLFWwindow(), true);
 	ImGui_ImplOpenGL3_Init("#version 460");
 
 	Time::init();
 
-	while (!glfwWindowShouldClose(window)) {
-		glfwGetWindowSize(window, &SCR_WIDTH, &SCR_HEIGHT);
-
+	while (!window.should_close()) {
+		window.update();
 		Time::update();
 		if (firstMouse || cursorEnabled) {
 			cam.update_last_mouse_pos();
@@ -188,11 +156,9 @@ int main() {
 		else if (!cursorEnabled) cam.update();
 		
 		if (cursorEnabled)
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			glfwSetInputMode(window.get_GLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		else
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-		processInput(window);
+			glfwSetInputMode(window.get_GLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -208,7 +174,7 @@ int main() {
 
 		rectShader.set_mat4("_model", model);
 		rectShader.set_mat4("_view", cam.get_view_matrix());
-		rectShader.set_mat4("_projection", cam.get_projection_matrix((float)SCR_WIDTH / (float) SCR_HEIGHT));
+		rectShader.set_mat4("_projection", cam.get_projection_matrix((float)window.get_width() / (float)window.get_height()));
 
 		glBindVertexArray(vao_arr);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -243,11 +209,11 @@ int main() {
 			ImGui::Text("Time: %.1f", Time::time);
 
 			ImGui::SetCursorPos(ImVec2(15, 70));
-			ImGui::Text("Delta Time: %.1f", Time::delta_time);
+			ImGui::Text("Delta Time: %.4f", Time::delta_time);
 
 			ImGui::SetCursorPos(ImVec2(15, 110));
 			static bool c19 = false;
-			ImGui::Checkbox("Wireframe View", &c19);
+			ImGui::Checkbox("Wireframe", &c19);
 
 			if(c19) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -263,11 +229,7 @@ int main() {
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-		glfwSwapBuffers(window);
-		glfwPollEvents();
 	}
-
 	Time::end();
 
 	ImGui_ImplOpenGL3_Shutdown();
@@ -276,8 +238,6 @@ int main() {
 
 	glDeleteVertexArrays(1, &vao_arr);
 	glDeleteBuffers(1, &vbo_arr);
-
-	glfwTerminate();
 
 	return 0;
 }

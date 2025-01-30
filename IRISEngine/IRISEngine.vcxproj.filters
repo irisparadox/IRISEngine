@@ -75,6 +75,9 @@
     <ClCompile Include="src\world\time.cpp">
       <Filter>Source Files\src\world</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\window.cpp">
+      <Filter>Source Files\src\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\include\graphics\shader.h">
@@ -109,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="src\include\controller\camera.h">
       <Filter>Header Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\graphics\window.h">
+      <Filter>Header Files\graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

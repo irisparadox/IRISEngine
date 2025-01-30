@@ -24,8 +24,8 @@ public:
 		return glm::lookAt(_Mypos, _Mypos + _Vecfront, _Vecup);
 	}
 
-	glm::mat4 get_projection_matrix(float _aspect_ratio) const {
-		return glm::perspective(glm::radians(_Myfov), _aspect_ratio, _Clipnear, _Clipfar);
+	glm::mat4 get_projection_matrix(float aspect_ratio) const {
+		return glm::perspective(glm::radians(_Myfov), aspect_ratio, _Clipnear, _Clipfar);
 	}
 
 	void set_window(GLFWwindow* _window) {
@@ -47,6 +47,7 @@ public:
 		_last_mouse_pos = _mouse_pos;
 
 		process_mouse(delta.x, delta.y);
+		process_keyboard();
 	}
 
 	void process_keyboard() {
