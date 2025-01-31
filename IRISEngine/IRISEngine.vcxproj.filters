@@ -46,6 +46,9 @@
     <Filter Include="Header Files\controller">
       <UniqueIdentifier>{c93e856e-c384-4d95-abf9-075f6cdef9db}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\src\controller">
+      <UniqueIdentifier>{a9819cde-83b4-4205-983e-6ed8849c2cca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -77,6 +80,9 @@
     </ClCompile>
     <ClCompile Include="src\graphics\window.cpp">
       <Filter>Source Files\src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\controller\input.cpp">
+      <Filter>Source Files\src\controller</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +121,9 @@
     </ClInclude>
     <ClInclude Include="src\include\graphics\window.h">
       <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\controller\input.h">
+      <Filter>Header Files\controller</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -19,24 +19,16 @@
 int SCR_WIDTH = 1024;
 int SCR_HEIGHT = 576;
 
-bool cursorEnabled = false;
-bool firstMouse = true;
-
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		cursorEnabled = !cursorEnabled;
-}
-
 int main() {
 
 	Window window(SCR_WIDTH, SCR_HEIGHT, "IRIS Engine");
-	glfwSetKeyCallback(window.get_GLFWwindow(), key_callback);
-	Camera cam(cameraPos, cameraUp, cameraFront);
-	cam.set_window(window.get_GLFWwindow());
+	Camera cam(cameraPos, cameraUp, cameraFront, window.get_GLFWwindow());
+	Input::init(window.get_GLFWwindow());
+	glfwSetKeyCallback(window.get_GLFWwindow(), Input::key_callback);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cout << "Failed to initialize GLAD" << '\n';
@@ -133,9 +125,6 @@ int main() {
 
 	rectShader.set_int("_Texture1", 0);
 
-	// uncomment this call to draw in wireframe polygons.
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -148,16 +137,7 @@ int main() {
 	while (!window.should_close()) {
 		window.update();
 		Time::update();
-		if (firstMouse || cursorEnabled) {
-			cam.update_last_mouse_pos();
-			firstMouse = false;
-		}
-		else if (!cursorEnabled) cam.update();
-		
-		if (cursorEnabled)
-			glfwSetInputMode(window.get_GLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		else
-			glfwSetInputMode(window.get_GLFWwindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		cam.update();
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

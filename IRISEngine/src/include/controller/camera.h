@@ -7,14 +7,17 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <world/time.h>
+#include "input.h"
 
 class Camera {
 	using vec3 = glm::vec3;
 
 public:
-	Camera(vec3 _start_pos, vec3 _upvec, vec3 _start_front) :
-		_Mypos(_start_pos), _Worldup(_upvec), _Myspeed(2.5f), _Mysens(0.2f), _Myfov(75.0f), _Clipnear(0.01f), _Clipfar(100.0f), _Smoothness(0.6f) {
+	Camera(vec3 _start_pos, vec3 _upvec, vec3 _start_front, GLFWwindow* _win) :
+		_Mypos(_start_pos), _Worldup(_upvec), _Myspeed(2.5f), _Mysens(0.2f), _Myfov(75.0f),
+		_Clipnear(0.01f), _Clipfar(100.0f), _Smoothness(0.6f), cursor_enabled(false), window(_win) {
 		_quat = glm::quatLookAt(glm::normalize(_start_front), _Worldup);
+		update_last_mouse_pos();
 		_vec_update();
 	};
 
@@ -44,19 +47,29 @@ public:
 		glm::vec2 delta = (_mouse_pos - _last_mouse_pos);
 		_last_mouse_pos = _mouse_pos;
 
-		process_mouse(delta.x, delta.y);
+		if (cursor_enabled) {
+			update_last_mouse_pos();
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		else {
+			process_mouse(delta.x, delta.y);
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
+
 		process_keyboard();
 	}
 
 	void process_keyboard() {
 		float velocity = _Myspeed * Time::delta_time;
-		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) velocity *= 2;
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) _Mypos += glm::normalize(vec3(_Vecfront.x, 0.0f, _Vecfront.z)) * velocity;
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) _Mypos -= glm::normalize(vec3(_Vecfront.x, 0.0f, _Vecfront.z)) * velocity;
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) _Mypos -= glm::normalize(vec3(_Vecright.x, 0.0f, _Vecright.z)) * velocity;
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) _Mypos += glm::normalize(vec3(_Vecright.x, 0.0f, _Vecright.z)) * velocity;
-		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) _Mypos += vec3(0.0f, 1.0f, 0.0f) * velocity;
-		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) _Mypos -= vec3(0.0f, 1.0f, 0.0f) * velocity;
+		if (Input::is_key_pressed(InputAction::SPRINT)) velocity *= 2;
+		if (Input::is_key_pressed(InputAction::MOVE_FORWARD)) _Mypos += glm::normalize(vec3(_Vecfront.x, 0.0f, _Vecfront.z)) * velocity;
+		if (Input::is_key_pressed(InputAction::MOVE_BACKWARD)) _Mypos -= glm::normalize(vec3(_Vecfront.x, 0.0f, _Vecfront.z)) * velocity;
+		if (Input::is_key_pressed(InputAction::MOVE_LEFT)) _Mypos -= glm::normalize(vec3(_Vecright.x, 0.0f, _Vecright.z)) * velocity;
+		if (Input::is_key_pressed(InputAction::MOVE_RIGHT)) _Mypos += glm::normalize(vec3(_Vecright.x, 0.0f, _Vecright.z)) * velocity;
+		if (Input::is_key_pressed(InputAction::MOVE_UP)) _Mypos += vec3(0.0f, 1.0f, 0.0f) * velocity;
+		if (Input::is_key_pressed(InputAction::MOVE_DOWN)) _Mypos -= vec3(0.0f, 1.0f, 0.0f) * velocity;
+
+		cursor_enabled = Input::get_key_state(InputAction::PAUSE);
 	}
 
 private:
@@ -104,6 +117,8 @@ private:
 	float _Myspeed, _Mysens, _Myfov;
 	float _Clipnear, _Clipfar;
 	float _Smoothness;
+
+	bool cursor_enabled;
 };
 
 #endif // !_CAMERA_

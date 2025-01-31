@@ -1,7 +1,7 @@
 #include <graphics/window.h>
 #include <iostream>
 
-Window::Window(int _w, int _h, const char* _title) : _m_width(_w), _m_height(_h) {
+Window::Window(int _w, int _h, const char* _title) : _m_width(_w), _m_height(_h), window(nullptr) {
 	if (!glfwInit()) {
 		std::cerr << "FATAL ERROR: Could not initialize GLFW\n";
 		return;
